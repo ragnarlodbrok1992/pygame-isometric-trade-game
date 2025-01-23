@@ -6,4 +6,3 @@ FPS = 60
 
 UI_FONT_SIZE = 16
 
-ENGINE_RUNNING = True

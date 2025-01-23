@@ -1,5 +1,7 @@
 import pygame
 from isometric_engine.config import *
+from isometric_engine.control import *
+from isometric_engine.grid import *
 
 # Initialize stuff before loop
 pygame.init()
