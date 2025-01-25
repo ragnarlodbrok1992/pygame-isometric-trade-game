@@ -9,6 +9,8 @@ CNTRL_2D_CAM_OFFSET_X = 0
 CNTRL_2D_CAM_OFFSET_Y = 0
 
 MOUSE_BUTTONS = (False, False, False)
+MOUSE_SELECTION_UI = False
+MOUSE_SELECTION_GAME_AREA = False
 MOUSE_DRAGGING = False
 MOUSE_DRAGGING_FRAME_DISTANCE = (0, 0)
 MOUSE_DRAGGING_HISTORY = [[-1, -1], [-1, -1]]  # Keeping current and last frame mouse positions to calculate drag vector

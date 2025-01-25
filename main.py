@@ -19,9 +19,12 @@ pygame.display.set_caption(CONF_WINDOW_TITLE)
 debug_font = pygame.font.SysFont("Fira Code Medium", CONF_UI_FONT_SIZE, bold=True)
 text_color = (255, 255, 255)
 
+# Debug variables
 DEBUG = False
+normal_proj_grid_bounding_box_points = []
 
 while CNTRL_ENGINE_RUNNING:
+    # =================== EVENT PROCESSING ==================
     # Event handling
     for event in pygame.event.get():
         # Check if quitting
@@ -40,10 +43,27 @@ while CNTRL_ENGINE_RUNNING:
         # Checking for mouse events
         if event.type == pygame.MOUSEBUTTONDOWN:
             MOUSE_BUTTONS = pygame.mouse.get_pressed()
+            MOUSE_SELECTION_GAME_AREA = True  # There are no UI elements right now
+
         elif event.type == pygame.MOUSEBUTTONUP:
             MOUSE_BUTTONS = pygame.mouse.get_pressed()
 
-    # After events
+            if MOUSE_SELECTION_GAME_AREA and not MOUSE_DRAGGING:
+                # We clicked stuff and we are not dragging - right now we try to look for a grid tile to select
+                # TODO: possible bug - we might not have click position data here but I might be wrong
+                #                      I think only when one have button down and button down in the same frame???
+                mouse_pos = pygame.mouse.get_pos()
+                # GAME_STATE_CLICKED_TILE = get_tile_from_grid(GRID_CHUNK, render_info, mouse_pos)
+                normal_proj_grid_bounding_box_points = get_tile_from_grid(GRID_CHUNK, render_info, mouse_pos)
+                print("Clicked, not dragging!")
+                # print(GAME_STATE_CLICKED_TILE)
+                print(normal_proj_grid_bounding_box_points)
+
+
+            MOUSE_SELECTION_GAME_AREA = False
+            GAME_STATE_CLICKED_TITLE = (-1, -1)
+
+    # After events - still processing controls!
     # Dragging check start
     if MOUSE_BUTTONS[0]:  # Left mouse button
         mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
@@ -76,6 +96,8 @@ while CNTRL_ENGINE_RUNNING:
         render_info.cam_offset_x += MOUSE_DRAGGING_FRAME_DISTANCE[0]
         render_info.cam_offset_y += MOUSE_DRAGGING_FRAME_DISTANCE[1]
 
+    # ================== FINISHING EVENT PROCESSING ===================
+
 
     # Calculate delta time
     dt = clock.tick(CONF_FPS) / 1000.0
@@ -89,6 +111,10 @@ while CNTRL_ENGINE_RUNNING:
 
     # Render isometric grid of water
     draw_grid_chunk(screen, render_info, GRID_CHUNK)
+
+    # Debug rendering
+    if normal_proj_grid_bounding_box_points:
+            pygame.draw.polygon(screen, (255, 255, 255), normal_proj_grid_bounding_box_points, width=1)
 
     # Debug text
     # TODO: Move this functions to debug_text.py
