@@ -5,11 +5,13 @@ from typing import Tuple
 
 from .isometric_perspective import *
 from .grid_config import *
+from .render_info import *
 
 GRID_CHUNK = np.full((GRID_CHUNK_ROWS, GRID_CHUNK_COLS), int(GridType.WATER), dtype=np.integer)
 
-def draw_grid_chunk(screen: pygame.surface.Surface, grid: NDArray[np.int_]) -> None:
+def draw_grid_chunk(screen: pygame.surface.Surface, render_info: RenderInfo, grid: NDArray[np.int_]) -> None:
     # Assumptions: origin for now (0, 0)
+    # TODO: use render_info to move whole grid while dragging the camera
     rows, cols = grid.shape
     for row in range(rows):
         for col in range(cols):
@@ -19,6 +21,8 @@ def draw_grid_chunk(screen: pygame.surface.Surface, grid: NDArray[np.int_]) -> N
             top_right = tuple(GRID_TILE_SIZE * np.array((col + 1, row)))
             bottom_right = tuple(GRID_TILE_SIZE * np.array((col + 1, row + 1)))
             bottom_left = tuple(GRID_TILE_SIZE * np.array((col, row + 1)))
+
+            # Move point by render_info camera offset
 
             points = cast_points_to_isometric([
                 top_left,
@@ -42,4 +46,3 @@ def draw_grid_chunk(screen: pygame.surface.Surface, grid: NDArray[np.int_]) -> N
                 width=1
             )
             
-
