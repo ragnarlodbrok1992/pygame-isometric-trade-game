@@ -22,14 +22,14 @@ def draw_grid_chunk(screen: pygame.surface.Surface, render_info: RenderInfo, gri
             bottom_right = tuple(GRID_TILE_SIZE * np.array((col + 1, row + 1)))
             bottom_left = tuple(GRID_TILE_SIZE * np.array((col, row + 1)))
 
-            # Move point by render_info camera offset
-
             points = cast_points_to_isometric([
                 top_left,
                 top_right,
                 bottom_right,
                 bottom_left,
                 ])
+
+            offset_points(points, render_info)
 
             # Drawing diamond polygon
             pygame.draw.polygon(
