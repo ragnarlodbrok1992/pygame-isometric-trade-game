@@ -17,7 +17,12 @@ class GridType(IntEnum):
     WATER = 1
     LAND = 2
 
-GRID_OUTLINE_COLOR = (138, 186, 48)
+# Outlines for all the grid tiles types
+GRID_OUTLINE_COLOR = {
+    0: (0, 0, 0),
+    1: (70, 125, 189),
+    2: (96, 163, 83),
+        }
 
 GRID_COLORS = {
     0: (0, 0, 0),  # VOID is black for now

@@ -11,7 +11,6 @@ GRID_CHUNK = np.full((GRID_CHUNK_ROWS, GRID_CHUNK_COLS), int(GridType.WATER), dt
 
 def draw_grid_chunk(screen: pygame.surface.Surface, render_info: RenderInfo, grid: NDArray[np.int_]) -> None:
     # Assumptions: origin for now (0, 0)
-    # TODO: use render_info to move whole grid while dragging the camera
     rows, cols = grid.shape
     for row in range(rows):
         for col in range(cols):
@@ -41,7 +40,7 @@ def draw_grid_chunk(screen: pygame.surface.Surface, render_info: RenderInfo, gri
             # Drawing outline of unselected polygon
             pygame.draw.polygon(
                 screen,
-                GRID_OUTLINE_COLOR,
+                GRID_OUTLINE_COLOR[int(GridType.WATER)],
                 points,
                 width=1
             )
