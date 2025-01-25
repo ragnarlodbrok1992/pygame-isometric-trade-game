@@ -5,6 +5,7 @@ from isometric_engine.grid import *
 from isometric_engine.render_info import *
 from isometric_engine.isometric_perspective import *
 from isometric_engine.debug_text import *
+from isometric_engine.game_state import *
 
 # Initialize stuff before loop
 pygame.init()
@@ -21,7 +22,6 @@ text_color = (255, 255, 255)
 
 # Debug variables
 DEBUG = False
-normal_proj_grid_bounding_box_points = []
 
 while CNTRL_ENGINE_RUNNING:
     # =================== EVENT PROCESSING ==================
@@ -52,16 +52,15 @@ while CNTRL_ENGINE_RUNNING:
                 # We clicked stuff and we are not dragging - right now we try to look for a grid tile to select
                 # TODO: possible bug - we might not have click position data here but I might be wrong
                 #                      I think only when one have button down and button down in the same frame???
+                print("Clicking!")
+                # FIXME: This global state is still not working
                 mouse_pos = pygame.mouse.get_pos()
-                # GAME_STATE_CLICKED_TILE = get_tile_from_grid(GRID_CHUNK, render_info, mouse_pos)
-                normal_proj_grid_bounding_box_points = get_tile_from_grid(GRID_CHUNK, render_info, mouse_pos)
-                print("Clicked, not dragging!")
-                # print(GAME_STATE_CLICKED_TILE)
-                print(normal_proj_grid_bounding_box_points)
-
+                get_tile_from_grid(GRID_CHUNK, render_info, mouse_pos)
+                print(hex(id(GAME_STATE_CLICKED_TILE)))
+                print(GAME_STATE_CLICKED_TILE)
 
             MOUSE_SELECTION_GAME_AREA = False
-            GAME_STATE_CLICKED_TITLE = (-1, -1)
+            # GAME_STATE_CLICKED_TILE = (-1, -1)
 
     # After events - still processing controls!
     # Dragging check start
@@ -113,8 +112,8 @@ while CNTRL_ENGINE_RUNNING:
     draw_grid_chunk(screen, render_info, GRID_CHUNK)
 
     # Debug rendering
-    if normal_proj_grid_bounding_box_points:
-            pygame.draw.polygon(screen, (255, 255, 255), normal_proj_grid_bounding_box_points, width=1)
+    # if normal_proj_grid_bounding_box_points:
+    #         pygame.draw.polygon(screen, (255, 255, 255), normal_proj_grid_bounding_box_points, width=1)
 
     # Debug text
     # TODO: Move this functions to debug_text.py
@@ -129,10 +128,13 @@ while CNTRL_ENGINE_RUNNING:
         mouse_buttons_text = debug_font.render(f"Pressed mouse buttons: {MOUSE_BUTTONS}", True, text_color)
         screen.blit(mouse_buttons_text, (10, 10 + 16 * 2))
 
+        current_mouse_position_text = debug_font.render(f"Current mouse position: {pygame.mouse.get_pos()}", True, text_color)
+        screen.blit(current_mouse_position_text, (10, 10 + 16 * 3))
+
         if MOUSE_DRAGGING:
             mouse_drag_text = debug_font.render(
                     f"Mouse dragging distance --> x: {MOUSE_DRAGGING_FRAME_DISTANCE[0]}, y: {MOUSE_DRAGGING_FRAME_DISTANCE[1]}", True, text_color)
-            screen.blit(mouse_drag_text, (10, 10 + 16 * 3))
+            screen.blit(mouse_drag_text, (10, 10 + 16 * 4))
 
     # Update FPS counter in window title
     pygame.display.set_caption(f"{CONF_WINDOW_TITLE} FPS: {clock.get_fps(): .2f}")

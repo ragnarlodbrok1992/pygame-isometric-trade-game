@@ -11,8 +11,8 @@ PROJECTION_MATRIX = np.array(
          (-1, 0.5)),
     dtype=np.float32)
 REVERSE_PROJECTION_MATRIX = np.array(
-        (( 0, -0.5),
-         ( 2,  1)),
+        (( 0.5, -0.5),
+         ( 1,  1)),
     dtype=np.float32)
 
 def cast_points_to_isometric(points: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
