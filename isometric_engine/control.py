@@ -1,1 +1,10 @@
 CNTRL_ENGINE_RUNNING = True
+
+# ----> X
+# |
+# |
+# v Y
+
+CNTRL_2D_CAM_OFFSET_X = 0
+CNTRL_2D_CAM_OFFSET_Y = 0
+

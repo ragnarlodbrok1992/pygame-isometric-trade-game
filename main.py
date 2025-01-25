@@ -2,6 +2,7 @@ import pygame
 from isometric_engine.config import *
 from isometric_engine.control import *
 from isometric_engine.grid import *
+from isometric_engine.isometric_perspective import *
 
 # Initialize stuff before loop
 pygame.init()
@@ -46,6 +47,9 @@ while CNTRL_ENGINE_RUNNING:
     if DEBUG:
         dt_text = debug_font.render(f"Delta Time: {dt: .4f} sec", True, text_color)
         screen.blit(dt_text, (10, 10))
+
+    # Render isometric grid of water
+    draw_grid_chunk(screen, GRID_CHUNK)
 
     # Update FPS counter in window title
     pygame.display.set_caption(f"{CONF_WINDOW_TITLE} FPS: {clock.get_fps(): .2f}")
