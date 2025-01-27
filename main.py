@@ -10,11 +10,14 @@ from isometric_engine.game_state import *
 # Initialize stuff before loop
 pygame.init()
 
-# Main engine stuff
+# Main engine library stuff
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((CONF_WINDOW_WIDTH, CONF_WINDOW_HEIGHT))
-render_info = RenderInfo()
 pygame.display.set_caption(CONF_WINDOW_TITLE)
+
+# Main engine local stuff
+render_info = RenderInfo()
+game_state = GameState()
 
 # UI stuff
 debug_font = pygame.font.SysFont("Fira Code Medium", CONF_UI_FONT_SIZE, bold=True)
@@ -55,9 +58,11 @@ while CNTRL_ENGINE_RUNNING:
                 print("Clicking!")
                 # FIXME: This global state is still not working
                 mouse_pos = pygame.mouse.get_pos()
-                get_tile_from_grid(GRID_CHUNK, render_info, mouse_pos)
-                print(hex(id(GAME_STATE_CLICKED_TILE)))
-                print(GAME_STATE_CLICKED_TILE)
+                get_tile_from_grid(GRID_CHUNK, render_info, game_state, mouse_pos)
+                # print(hex(id(GAME_STATE_CLICKED_TILE)))
+                # print(GAME_STATE_CLICKED_TILE)
+                # print(hex(id(HANDLE_GAME_STATE)))
+                # print(HANDLE_GAME_STATE)
 
             MOUSE_SELECTION_GAME_AREA = False
             # GAME_STATE_CLICKED_TILE = (-1, -1)
@@ -109,7 +114,7 @@ while CNTRL_ENGINE_RUNNING:
 
 
     # Render isometric grid of water
-    draw_grid_chunk(screen, render_info, GRID_CHUNK)
+    draw_grid_chunk(screen, render_info, game_state, GRID_CHUNK)
 
     # Debug rendering
     # if normal_proj_grid_bounding_box_points:

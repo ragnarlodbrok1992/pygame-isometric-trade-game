@@ -10,7 +10,7 @@ from .game_state import *
 
 GRID_CHUNK = np.full((GRID_CHUNK_ROWS, GRID_CHUNK_COLS), int(GridType.WATER), dtype=np.integer)
 
-def get_tile_from_grid(grid: NDArray[np.int_], render_info: RenderInfo, click_position: Tuple[int, int]) -> None:
+def get_tile_from_grid(grid: NDArray[np.int_], render_info: RenderInfo, game_state: GameState, click_position: Tuple[int, int]) -> None:
     # 1. Project clicked position to iso projection.
     # 2. Calculate grid bound box in iso projection.
     # 3. Check if click is inside grid bounding box.
@@ -28,23 +28,28 @@ def get_tile_from_grid(grid: NDArray[np.int_], render_info: RenderInfo, click_po
             click_position[1] - render_info.cam_offset_y)]
     new_normal_projection_pos = cast_points_to_normal(normal_projection_mouse_pos)[0]
 
-    GAME_STATE_CLICKED_TILE = (new_normal_projection_pos[0] // GRID_TILE_SIZE, new_normal_projection_pos[1] // GRID_TILE_SIZE)
+    # GAME_STATE_CLICKED_TILE = (new_normal_projection_pos[0] // GRID_TILE_SIZE, new_normal_projection_pos[1] // GRID_TILE_SIZE)
+    game_state.clicked_tile = (new_normal_projection_pos[0] // GRID_TILE_SIZE, new_normal_projection_pos[1] // GRID_TILE_SIZE)
     # FIXME: I have no idea what is actually going on
     print("Changing state!")
-    print(GAME_STATE_CLICKED_TILE)
+    # print(GAME_STATE_CLICKED_TILE)
+    print(game_state)
 
-def draw_grid_chunk(screen: pygame.surface.Surface, render_info: RenderInfo, grid: NDArray[np.int_]) -> None:
+def draw_grid_chunk(screen: pygame.surface.Surface, render_info: RenderInfo, game_state: GameState, grid: NDArray[np.int_]) -> None:
     # Assumptions: origin for now (0, 0)
     rows, cols = grid.shape
-    x_id, y_id = GAME_STATE_CLICKED_TILE
+    # x_id, y_id = GAME_STATE_CLICKED_TILE
+    x_id, y_id = game_state.clicked_tile
     # FIXME: This global state is still not working
     # print(hex(id(GAME_STATE_CLICKED_TILE)))
     # print(x_id, y_id)
     for row in range(rows):
         for col in range(cols):
-            # if x_id == col and y_id == row:
-            #     print("We have something selected!")
-            color = GRID_COLORS[grid[row, col]]
+            if x_id == col and y_id == row:
+                # print("We have something selected!")
+                color = GRID_COLORS[255]
+            else:
+                color = GRID_COLORS[grid[row, col]]
 
             top_left = tuple(GRID_TILE_SIZE * np.array((col, row)))
             top_right = tuple(GRID_TILE_SIZE * np.array((col + 1, row)))

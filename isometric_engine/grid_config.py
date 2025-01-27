@@ -25,6 +25,7 @@ GRID_OUTLINE_COLOR = {
         }
 
 GRID_COLORS = {
+    255: (194, 191, 41), # DEBUG: selected tile color
     0: (0, 0, 0),  # VOID is black for now
     1: (35, 79, 130),  # WATER color
     2: (47, 89, 39),  # LAND color
