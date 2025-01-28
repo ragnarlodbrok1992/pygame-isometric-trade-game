@@ -43,6 +43,10 @@ while CNTRL_ENGINE_RUNNING:
             if pygame.key.get_mods() & pygame.KMOD_LCTRL and event.key == pygame.K_F11:
                 DEBUG = not DEBUG
 
+            # DEBUG IF
+            if event.key == pygame.K_w:
+                GRID_CHUNK = resizing_grid_chunk(GRID_CHUNK, 20, 20)
+
         # Checking for mouse events
         if event.type == pygame.MOUSEBUTTONDOWN:
             MOUSE_BUTTONS = pygame.mouse.get_pressed()
