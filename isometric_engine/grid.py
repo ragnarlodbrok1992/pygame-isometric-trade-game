@@ -10,7 +10,7 @@ from .game_state import *
 
 GRID_CHUNK: NDArray[np.int_] = np.full((GRID_CHUNK_ROWS, GRID_CHUNK_COLS), int(GridType.WATER), dtype=np.integer)
 
-def resizing_grid_chunk(chunk: NDArray[np.int_], new_size_x: int, new_size_y: int) -> NDArray[np.int_]:
+def resize_grid_chunk(chunk: NDArray[np.int_], new_size_x: int, new_size_y: int) -> NDArray[np.int_]:
     return np.resize(chunk, (new_size_x, new_size_y))
 
 def get_tile_from_grid(grid: NDArray[np.int_], render_info: RenderInfo, game_state: GameState, click_position: Tuple[int, int]) -> None:

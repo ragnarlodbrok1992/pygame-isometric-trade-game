@@ -1,0 +1,6 @@
+[submodule "SDL"]
+	path = SDL
+	url = https://github.com/libsdl-org/SDL
+[submodule "pygame-ce"]
+	path = pygame-ce
+	url = https://github.com/pygame-community/pygame-ce.git

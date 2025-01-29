@@ -6,6 +6,8 @@ from isometric_engine.render_info import *
 from isometric_engine.isometric_perspective import *
 from isometric_engine.debug_text import *
 from isometric_engine.game_state import *
+from isometric_engine.ui_state import *
+from isometric_engine.console import *
 
 # Initialize stuff before loop
 pygame.init()
@@ -18,6 +20,8 @@ pygame.display.set_caption(CONF_WINDOW_TITLE)
 # Main engine local stuff
 render_info = RenderInfo()
 game_state = GameState()
+ui_state = UIState()
+console = Console()
 
 # UI stuff
 debug_font = pygame.font.SysFont("Fira Code Medium", CONF_UI_FONT_SIZE, bold=True)
@@ -43,9 +47,12 @@ while CNTRL_ENGINE_RUNNING:
             if pygame.key.get_mods() & pygame.KMOD_LCTRL and event.key == pygame.K_F11:
                 DEBUG = not DEBUG
 
-            # DEBUG IF
+            # DEBUG - pygame.K_w is here to resize chunk
             if event.key == pygame.K_w:
-                GRID_CHUNK = resizing_grid_chunk(GRID_CHUNK, 20, 20)
+                GRID_CHUNK = resize_grid_chunk(GRID_CHUNK, 20, 20)
+
+            if event.key == pygame.K_BACKQUOTE:
+                print("Console activated!")
 
         # Checking for mouse events
         if event.type == pygame.MOUSEBUTTONDOWN:
