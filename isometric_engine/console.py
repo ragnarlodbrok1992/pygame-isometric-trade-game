@@ -4,6 +4,6 @@ from dataclasses import dataclass
 class Console:
     command: str = ''
 
-def draw_console(console: Console):
+def draw_console(console: Console) -> None:
     pass
 

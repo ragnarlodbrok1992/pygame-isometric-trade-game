@@ -1,4 +1,6 @@
 tags
+tags.lock
+tags.temp
 .venv/
 **/__pycache__
 .mypy_cache/
