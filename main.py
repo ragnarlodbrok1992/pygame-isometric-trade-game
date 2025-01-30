@@ -1,4 +1,7 @@
 import pygame
+import random
+import string
+
 from isometric_engine.config import *
 from isometric_engine.control import *
 from isometric_engine.grid import *
@@ -14,8 +17,10 @@ pygame.init()
 
 # Main engine library stuff
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode((CONF_WINDOW_WIDTH, CONF_WINDOW_HEIGHT))
+screen = pygame.display.set_mode((CONF_WINDOW_WIDTH, CONF_WINDOW_HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
 pygame.display.set_caption(CONF_WINDOW_TITLE)
+
+pygame.key.set_repeat(500, 30)
 
 # Main engine local stuff
 render_info = RenderInfo()
@@ -24,7 +29,6 @@ ui_state = UIState()
 console = Console()
 
 # UI stuff
-debug_font = pygame.font.SysFont("Fira Code Medium", CONF_UI_FONT_SIZE, bold=True)
 text_color = (255, 255, 255)
 
 # Debug variables
@@ -40,19 +44,43 @@ while CNTRL_ENGINE_RUNNING:
 
         # Check for keyboard input
         if event.type == pygame.KEYDOWN:
-            # Check for Q - quit the game
-            if event.key == pygame.K_q:
-                CNTRL_ENGINE_RUNNING = False
+            # TODO: add switch for keyboard input for console on/off
+            # TODO: design console input system - we need to populate Console.command variable and process it
+            # after pushing ENTER key
+
             # Turning debug on and off
             if pygame.key.get_mods() & pygame.KMOD_LCTRL and event.key == pygame.K_F11:
-                DEBUG = not DEBUG
+                # DEBUG = not DEBUG
+                ui_state.debug_text_out = not ui_state.debug_text_out
 
-            # DEBUG - pygame.K_w is here to resize chunk
-            if event.key == pygame.K_w:
-                GRID_CHUNK = resize_grid_chunk(GRID_CHUNK, 20, 20)
+            if not console.ready:
+                # Check for Q - quit the game
+                if event.key == pygame.K_q:
+                    CNTRL_ENGINE_RUNNING = False
+
+                # DEBUG - pygame.K_w is here to resize chunk
+                if event.key == pygame.K_w:
+                    GRID_CHUNK = resize_grid_chunk(GRID_CHUNK, 20, 20)
+
+                # if event.key == pygame.K_r:
+                #     characters = string.ascii_lowercase
+                #     console.command += random.choice(characters)
+                #     print(console.command)
+            else:
+                # FIXME I think we do think badly here about appending characters to string - but fuck that for now
+                if event.unicode == '\x08':
+                    console.command = console.command[:-1]
+                elif event.unicode == '\r':
+                    print("[CONSOLE] Pressed enter! Validate command")  # TODO: create validation logic for console input command
+                else:
+                    console.command += event.unicode
 
             if event.key == pygame.K_BACKQUOTE:
+                ui_state.console_out = not ui_state.console_out
+                console.ready = not console.ready  # TODO console will be ready after animation - right now we are ready immediately
+                console.command = ''
                 print("Console activated!")
+                print(f"UIState->console_out --> {ui_state.console_out}")
 
         # Checking for mouse events
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -121,9 +149,6 @@ while CNTRL_ENGINE_RUNNING:
     screen.fill(CONF_BACKGROUND_COLOR)
 
     # Render stuff
-    # UI stuff
-
-
     # Render isometric grid of water
     draw_grid_chunk(screen, render_info, game_state, GRID_CHUNK)
 
@@ -131,26 +156,31 @@ while CNTRL_ENGINE_RUNNING:
     # if normal_proj_grid_bounding_box_points:
     #         pygame.draw.polygon(screen, (255, 255, 255), normal_proj_grid_bounding_box_points, width=1)
 
+    # UI stuff
+    if ui_state.console_out:
+        draw_console(screen, console, ui_state, dt)
+
     # Debug text
     # TODO: Move this functions to debug_text.py
-    if DEBUG:
-        dt_text = debug_font.render(f"Delta Time: {dt: .4f} sec", True, text_color)
-        screen.blit(dt_text, (10, 10))
+    if ui_state.debug_text_out:
+        debug_y = CONF_WINDOW_HEIGHT - 16
+        dt_text = DEBUG_FONT.render(f"Delta Time: {dt: .4f} sec", True, text_color)
+        screen.blit(dt_text, (10, debug_y))
 
-        camera_offset_text = debug_font.render(
+        camera_offset_text = DEBUG_FONT.render(
                 f"Camera offset --> x: {render_info.cam_offset_x}, y: {render_info.cam_offset_y}", True, text_color)
-        screen.blit(camera_offset_text, (10, 10 + 16 * 1))
+        screen.blit(camera_offset_text, (10, debug_y - 16 * 1))
 
-        mouse_buttons_text = debug_font.render(f"Pressed mouse buttons: {MOUSE_BUTTONS}", True, text_color)
-        screen.blit(mouse_buttons_text, (10, 10 + 16 * 2))
+        mouse_buttons_text = DEBUG_FONT.render(f"Pressed mouse buttons: {MOUSE_BUTTONS}", True, text_color)
+        screen.blit(mouse_buttons_text, (10, debug_y - 16 * 2))
 
-        current_mouse_position_text = debug_font.render(f"Current mouse position: {pygame.mouse.get_pos()}", True, text_color)
-        screen.blit(current_mouse_position_text, (10, 10 + 16 * 3))
+        current_mouse_position_text = DEBUG_FONT.render(f"Current mouse position: {pygame.mouse.get_pos()}", True, text_color)
+        screen.blit(current_mouse_position_text, (10, debug_y - 16 * 3))
 
         if MOUSE_DRAGGING:
-            mouse_drag_text = debug_font.render(
+            mouse_drag_text = DEBUG_FONT.render(
                     f"Mouse dragging distance --> x: {MOUSE_DRAGGING_FRAME_DISTANCE[0]}, y: {MOUSE_DRAGGING_FRAME_DISTANCE[1]}", True, text_color)
-            screen.blit(mouse_drag_text, (10, 10 + 16 * 4))
+            screen.blit(mouse_drag_text, (10, debug_y - 16 * 4))
 
     # Update FPS counter in window title
     pygame.display.set_caption(f"{CONF_WINDOW_TITLE} FPS: {clock.get_fps(): .2f}")
