@@ -4,10 +4,10 @@ import string
 
 from isometric_engine.config import *
 from isometric_engine.control import *
+from isometric_engine.debug_text import *
 from isometric_engine.grid import *
 from isometric_engine.render_info import *
 from isometric_engine.isometric_perspective import *
-from isometric_engine.debug_text import *
 from isometric_engine.game_state import *
 from isometric_engine.ui_state import *
 from isometric_engine.console import *
@@ -23,13 +23,11 @@ pygame.display.set_caption(CONF_WINDOW_TITLE)
 pygame.key.set_repeat(500, 30)
 
 # Main engine local stuff
+debug_text = DebugText()
 render_info = RenderInfo()
 game_state = GameState()
 ui_state = UIState()
 console = Console()
-
-# UI stuff
-text_color = (255, 255, 255)
 
 # Debug variables
 DEBUG = False
@@ -50,7 +48,6 @@ while CNTRL_ENGINE_RUNNING:
 
             # Turning debug on and off
             if pygame.key.get_mods() & pygame.KMOD_LCTRL and event.key == pygame.K_F11:
-                # DEBUG = not DEBUG
                 ui_state.debug_text_out = not ui_state.debug_text_out
 
             if not console.ready:
@@ -62,10 +59,6 @@ while CNTRL_ENGINE_RUNNING:
                 if event.key == pygame.K_w:
                     GRID_CHUNK = resize_grid_chunk(GRID_CHUNK, 20, 20)
 
-                # if event.key == pygame.K_r:
-                #     characters = string.ascii_lowercase
-                #     console.command += random.choice(characters)
-                #     print(console.command)
             else:
                 # FIXME I think we do think badly here about appending characters to string - but fuck that for now
                 if event.unicode == '\x08':
@@ -79,8 +72,6 @@ while CNTRL_ENGINE_RUNNING:
                 ui_state.console_out = not ui_state.console_out
                 console.ready = not console.ready  # TODO console will be ready after animation - right now we are ready immediately
                 console.command = ''
-                print("Console activated!")
-                print(f"UIState->console_out --> {ui_state.console_out}")
 
         # Checking for mouse events
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -98,16 +89,12 @@ while CNTRL_ENGINE_RUNNING:
                 # FIXME: This global state is still not working
                 mouse_pos = pygame.mouse.get_pos()
                 get_tile_from_grid(GRID_CHUNK, render_info, game_state, mouse_pos)
-                # print(hex(id(GAME_STATE_CLICKED_TILE)))
-                # print(GAME_STATE_CLICKED_TILE)
-                # print(hex(id(HANDLE_GAME_STATE)))
-                # print(HANDLE_GAME_STATE)
 
             MOUSE_SELECTION_GAME_AREA = False
-            # GAME_STATE_CLICKED_TILE = (-1, -1)
 
     # After events - still processing controls!
     # Dragging check start
+    # TODO: Move mousing to it's own class
     if MOUSE_BUTTONS[0]:  # Left mouse button
         mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
         # Populate mouse dragging history properly
@@ -152,10 +139,6 @@ while CNTRL_ENGINE_RUNNING:
     # Render isometric grid of water
     draw_grid_chunk(screen, render_info, game_state, GRID_CHUNK)
 
-    # Debug rendering
-    # if normal_proj_grid_bounding_box_points:
-    #         pygame.draw.polygon(screen, (255, 255, 255), normal_proj_grid_bounding_box_points, width=1)
-
     # UI stuff
     if ui_state.console_out:
         draw_console(screen, console, ui_state, dt)
@@ -163,24 +146,14 @@ while CNTRL_ENGINE_RUNNING:
     # Debug text
     # TODO: Move this functions to debug_text.py
     if ui_state.debug_text_out:
-        debug_y = CONF_WINDOW_HEIGHT - 16
-        dt_text = DEBUG_FONT.render(f"Delta Time: {dt: .4f} sec", True, text_color)
-        screen.blit(dt_text, (10, debug_y))
-
-        camera_offset_text = DEBUG_FONT.render(
-                f"Camera offset --> x: {render_info.cam_offset_x}, y: {render_info.cam_offset_y}", True, text_color)
-        screen.blit(camera_offset_text, (10, debug_y - 16 * 1))
-
-        mouse_buttons_text = DEBUG_FONT.render(f"Pressed mouse buttons: {MOUSE_BUTTONS}", True, text_color)
-        screen.blit(mouse_buttons_text, (10, debug_y - 16 * 2))
-
-        current_mouse_position_text = DEBUG_FONT.render(f"Current mouse position: {pygame.mouse.get_pos()}", True, text_color)
-        screen.blit(current_mouse_position_text, (10, debug_y - 16 * 3))
-
+        debug_text.draw_debug_text(screen, f"Delta Time: {dt: .4f} sec")
+        debug_text.draw_debug_text(screen, f"Camera offset --> x: {render_info.cam_offset_x}, y: {render_info.cam_offset_y}")
+        debug_text.draw_debug_text(screen, f"Pressed mouse buttons: {MOUSE_BUTTONS}")
+        debug_text.draw_debug_text(screen, f"Current mouse position: {pygame.mouse.get_pos()}")
         if MOUSE_DRAGGING:
-            mouse_drag_text = DEBUG_FONT.render(
-                    f"Mouse dragging distance --> x: {MOUSE_DRAGGING_FRAME_DISTANCE[0]}, y: {MOUSE_DRAGGING_FRAME_DISTANCE[1]}", True, text_color)
-            screen.blit(mouse_drag_text, (10, debug_y - 16 * 4))
+            debug_text.draw_debug_text(screen, f"Mouse dragging distance --> x: {MOUSE_DRAGGING_FRAME_DISTANCE[0]}, y: {MOUSE_DRAGGING_FRAME_DISTANCE[1]}")
+
+    debug_text.reset_debug_ui();  # TODO: calling this is required every end of the frame - don't know how to tackle that yet
 
     # Update FPS counter in window title
     pygame.display.set_caption(f"{CONF_WINDOW_TITLE} FPS: {clock.get_fps(): .2f}")

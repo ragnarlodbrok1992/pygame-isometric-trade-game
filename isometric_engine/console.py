@@ -5,6 +5,7 @@ from typing import List, Tuple
 
 from .ui_state import *
 from .config import *
+from .debug_text import *
 
 @dataclass
 class Console:
@@ -40,5 +41,5 @@ def draw_console(screen: pygame.surface.Surface, console: Console, ui_state: UIS
         console.cursor_blink = 0.0
     console.cursor_blink += dt
     # Draw input text
-    console_input_text = DEBUG_FONT.render(console.command, True, CONF_CONSOLE_FONT_COLOR)
+    console_input_text = CONF_CONSOLE_FONT.render(console.command, True, CONF_CONSOLE_FONT_COLOR)
     screen.blit(console_input_text, (console.cursor_pos))

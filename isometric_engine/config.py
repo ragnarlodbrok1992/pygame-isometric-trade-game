@@ -4,9 +4,6 @@ import pygame
 pygame.init()
 
 CONF_UI_FONT_SIZE = 16
-
-DEBUG_FONT = pygame.font.SysFont("Fira Code Medium", CONF_UI_FONT_SIZE, bold=True)
-
 CONF_WINDOW_WIDTH = 1280
 CONF_WINDOW_HEIGHT = 720
 CONF_WINDOW_TITLE = "Isometric Trading Game"
@@ -21,6 +18,7 @@ CONF_CONSOLE_FONT_WIDTH = 11  # Assumed for 14 size font
 CONF_CONSOLE_TOP_LEFT = (10, 10)
 CONF_CONSOLE_HEIGHT_PERCENT = 0.30
 CONF_CONSOLE_APPEAR_TIME = 2.0
+CONF_CONSOLE_FONT = pygame.font.SysFont("Fira Code Medium", CONF_UI_FONT_SIZE, bold=True)
 
 # Do not change this values (for now)
 CONF_CONSOLE_POINTS_BOTTOM_LEFT = (CONF_CONSOLE_TOP_LEFT[0], CONF_CONSOLE_TOP_LEFT[1] + int(CONF_WINDOW_WIDTH * CONF_CONSOLE_HEIGHT_PERCENT))
