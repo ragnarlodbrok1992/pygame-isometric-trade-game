@@ -34,9 +34,9 @@ def get_tile_from_grid(grid: NDArray[np.int_], render_info: RenderInfo, game_sta
     # GAME_STATE_CLICKED_TILE = (new_normal_projection_pos[0] // GRID_TILE_SIZE, new_normal_projection_pos[1] // GRID_TILE_SIZE)
     game_state.clicked_tile = (new_normal_projection_pos[0] // GRID_TILE_SIZE, new_normal_projection_pos[1] // GRID_TILE_SIZE)
     # FIXME: I have no idea what is actually going on
-    print("Changing state!")
+    # print("Changing state!")
     # print(GAME_STATE_CLICKED_TILE)
-    print(game_state)
+    # print(game_state)
 
 def draw_grid_chunk(screen: pygame.surface.Surface, render_info: RenderInfo, game_state: GameState, grid: NDArray[np.int_]) -> None:
     # Assumptions: origin for now (0, 0)

@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-GRID_TILE_SIZE = 32
+GRID_TILE_SIZE: int = 32
 
 # This isometric grid assumes that: 
 # North --> TopRight

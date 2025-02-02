@@ -2,6 +2,9 @@ import pygame
 import random
 import string
 
+from pathlib import Path
+
+# Engine stuff
 from isometric_engine.config import *
 from isometric_engine.control import *
 from isometric_engine.debug_text import *
@@ -12,12 +15,16 @@ from isometric_engine.game_state import *
 from isometric_engine.ui_state import *
 from isometric_engine.console import *
 
+# Game stuff
+from isometric_engine.game.ship import *
+
+
 # Initialize stuff before loop
 pygame.init()
 
 # Main engine library stuff
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode((CONF_WINDOW_WIDTH, CONF_WINDOW_HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
+screen: pygame.Surface = pygame.display.set_mode((CONF_WINDOW_WIDTH, CONF_WINDOW_HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
 pygame.display.set_caption(CONF_WINDOW_TITLE)
 
 pygame.key.set_repeat(500, 30)
@@ -28,6 +35,13 @@ render_info = RenderInfo()
 game_state = GameState()
 ui_state = UIState()
 console = Console()
+
+# Inner game entities
+ship = Ship()
+
+# Assets loading - we try to do that from here
+ship_assets = Path('assets/ship')
+ship.load_assets(ship_assets)
 
 # Debug variables
 DEBUG = False
@@ -49,6 +63,7 @@ while CNTRL_ENGINE_RUNNING:
             # Turning debug on and off
             if pygame.key.get_mods() & pygame.KMOD_LCTRL and event.key == pygame.K_F11:
                 ui_state.debug_text_out = not ui_state.debug_text_out
+                render_info.debug_render = not render_info.debug_render
 
             if not console.ready:
                 # Check for Q - quit the game
@@ -79,16 +94,17 @@ while CNTRL_ENGINE_RUNNING:
             MOUSE_SELECTION_GAME_AREA = True  # There are no UI elements right now
 
         elif event.type == pygame.MOUSEBUTTONUP:
-            MOUSE_BUTTONS = pygame.mouse.get_pressed()
-
             if MOUSE_SELECTION_GAME_AREA and not MOUSE_DRAGGING:
                 # We clicked stuff and we are not dragging - right now we try to look for a grid tile to select
                 # TODO: possible bug - we might not have click position data here but I might be wrong
                 #                      I think only when one have button down and button down in the same frame???
-                print("Clicking!")
+                # print("Clicking!")
                 # FIXME: This global state is still not working
-                mouse_pos = pygame.mouse.get_pos()
-                get_tile_from_grid(GRID_CHUNK, render_info, game_state, mouse_pos)
+                if MOUSE_BUTTONS[0]:
+                    mouse_pos = pygame.mouse.get_pos()
+                    get_tile_from_grid(GRID_CHUNK, render_info, game_state, mouse_pos)
+
+            MOUSE_BUTTONS = pygame.mouse.get_pressed()
 
             MOUSE_SELECTION_GAME_AREA = False
 
@@ -138,6 +154,9 @@ while CNTRL_ENGINE_RUNNING:
     # Render stuff
     # Render isometric grid of water
     draw_grid_chunk(screen, render_info, game_state, GRID_CHUNK)
+
+    # Render objects
+    ship.render_ship(screen, render_info)
 
     # UI stuff
     if ui_state.console_out:
