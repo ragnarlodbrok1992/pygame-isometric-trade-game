@@ -47,6 +47,10 @@ ship.load_assets(ship_assets)
 DEBUG = False
 
 while CNTRL_ENGINE_RUNNING:
+    # Calculate delta time
+    # dt is needed also in controls, not just rendering
+    dt = clock.tick(CONF_FPS) / 1000.0
+
     # =================== EVENT PROCESSING ==================
     # Event handling
     for event in pygame.event.get():
@@ -73,6 +77,19 @@ while CNTRL_ENGINE_RUNNING:
                 # DEBUG - pygame.K_w is here to resize chunk
                 if event.key == pygame.K_w:
                     GRID_CHUNK = resize_grid_chunk(GRID_CHUNK, 20, 20)
+                    # TODO: resizing this grid chunk creates a new one, that is not one used in ship navigation
+                    # TODO: create manager class that will be passed around and have chunks inside it (world manager)
+                    print(f"Resizing grid_chunk -> {hex(id(GRID_CHUNK))}")
+
+                # Check arrow keys
+                if event.key == pygame.K_LEFT:
+                    ship.rotate_counterclockwise()
+
+                if event.key == pygame.K_RIGHT:
+                    ship.rotate_clockwise()
+
+                if event.key == pygame.K_UP:
+                    ship.try_to_go_forward()
 
             else:
                 # FIXME I think we do think badly here about appending characters to string - but fuck that for now
@@ -142,10 +159,6 @@ while CNTRL_ENGINE_RUNNING:
 
     # ================== FINISHING EVENT PROCESSING ===================
 
-
-    # Calculate delta time
-    dt = clock.tick(CONF_FPS) / 1000.0
-
     # Fill screen with the background color
     screen.fill(CONF_BACKGROUND_COLOR)
 
@@ -154,7 +167,7 @@ while CNTRL_ENGINE_RUNNING:
     draw_grid_chunk(screen, render_info, game_state, GRID_CHUNK)
 
     # Render objects
-    ship.render_ship(screen, render_info)
+    ship.render_ship(screen, render_info, dt)
 
     # UI stuff
     if ui_state.console_out:

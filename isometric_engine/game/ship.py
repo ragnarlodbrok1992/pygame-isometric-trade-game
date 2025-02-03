@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import pygame
+
 from pathlib import Path
 from typing import List, Tuple
+from enum import IntEnum
 
 from ..render_info import *
 from ..isometric_perspective import *
 from ..grid_config import *
+from ..grid import *
+from ..iso_math import *
 
 # Directions - this somehow should make sens, I don't know how to give directions with three pieces
 # 0  - ship1  - NW
@@ -23,6 +29,30 @@ from ..grid_config import *
 # 13 - ship14 - NNE
 # 14 - ship15 - N
 # 15 - ship16 - NNW
+
+class Direction(IntEnum):
+    NW  = 0
+    WNW = 1
+    W   = 2
+    WSW = 3
+    SW  = 4
+    SSW = 5
+    S   = 6
+    SSE = 7
+    SE  = 8
+    ESE = 9
+    E   = 10
+    ENE = 11
+    NE  = 12
+    NNE = 13
+    N   = 14
+    NNW = 15
+
+    def __add__(self, other: int) -> Direction:
+        return Direction((self.value + other) % 16)
+
+    def __sub__(self, other: int) -> Direction:
+        return Direction((self.value - other) % 16)
 
 class Ship:
     def __init__(self) -> None:
@@ -46,21 +76,104 @@ class Ship:
                 ]
         self.sprites: List[pygame.Surface] = []
         self.position = pygame.math.Vector2(0, 0)  # In chunk grid positions
-        self.direction: int = 6
+        self.start_position = pygame.math.Vector2(0, 0)
+        self.position_to_go = pygame.math.Vector2(0, 0)
+        self.direction: Direction = Direction.S
+        self.rotating_left: bool = False
+        self.rotating_right: bool = False
+        self.is_sailing: bool = False
+        self.save_start_position: bool = True
+        self.rotation_speed: float = 0.125
+        self.sail_time: float = 1.0
+        self.current_sail_time: float = 0.0
 
     def load_assets(self, assets_path: Path) -> None:
         # Check if assets are there
-        # print(assets_path)
         for asset in self.assets_names_list:
             full_asset_path = f"{assets_path}\\{asset}"
-            # print(full_asset_path, Path(full_asset_path).exists())
             if Path(full_asset_path).exists():
                 self.sprites.append(pygame.image.load(full_asset_path))
 
         # Check if assets are loaded correctly
         assert(len(self.sprites) == 16)
 
-    def render_ship(self, screen: pygame.Surface, render_info: RenderInfo) -> None:
+    def rotate_clockwise(self) -> None:
+        self.rotating_right = True
+
+    def rotate_counterclockwise(self) -> None:
+        self.rotating_left = True
+
+    def _calculate_rotation(self, dt: float) -> None:
+        if self.rotating_left or self.rotating_right:
+            self.rotation_speed -= dt
+            if self.rotation_speed < 0.0:
+                # Do the rotation
+                if self.rotating_right:
+                    self.direction -= 1
+                    if not self.direction % 2 == 1:
+                        self.rotating_right = False
+                elif self.rotating_left:
+                    self.direction += 1
+                    if not self.direction % 2 == 1:
+                        self.rotating_left = False
+                self.rotation_speed = 0.250
+
+    def try_to_go_forward(self) -> None:
+        if self.is_sailing:
+            return
+
+        possible_position = pygame.math.Vector2(0, 0)
+        match self.direction:
+            case Direction.N:
+                possible_position = self.position + (0, -1)
+            case Direction.E:
+                possible_position = self.position + (1, 0)
+            case Direction.S:
+                possible_position = self.position + (0, 1)
+            case Direction.W:
+                possible_position = self.position + (-1, 0)
+            case Direction.NE:
+                possible_position = self.position + (1, -1)
+            case Direction.NW:
+                possible_position = self.position + (-1, -1)
+            case Direction.SE:
+                possible_position = self.position + (1, 1)
+            case Direction.SW:
+                possible_position = self.position + (-1, 1)
+            case _:
+                # TODO: log this in console? Shouldn't happen, but player can press UP while ship is rotating
+                pass
+
+        if possible_position != pygame.math.Vector2(0, 0):
+            x_ind, y_ind = GRID_CHUNK.shape
+            if 0 <= possible_position.x < x_ind and 0 <= possible_position.y < y_ind:
+                self.is_sailing = True
+                self.position_to_go = possible_position
+
+    def _sail(self, old_position: pygame.math.Vector2, new_position: pygame.math.Vector2, dt: float) -> None:
+        self.save_start_position = False
+
+        self.current_sail_time += dt
+        sail_vector = new_position - old_position
+        percent_there = self.current_sail_time / self.sail_time
+        lerped_position = lerp_vec2(new_position, old_position, percent_there)
+        self.position = lerped_position
+        if self.current_sail_time > self.sail_time:
+            self.is_sailing = False
+            self.save_start_position = True
+            self.current_sail_time = 0.0
+            self.position = pygame.math.Vector2(
+                    round(self.position.x),
+                    round(self.position.y))
+
+    def render_ship(self, screen: pygame.Surface, render_info: RenderInfo, dt: float) -> None:
+        self._calculate_rotation(dt)
+
+        if self.is_sailing:
+            if self.save_start_position:
+                self.start_position = self.position
+            self._sail(self.position_to_go, self.start_position, dt)
+
         # Translate self.position to screen isometric perspective coordinates
         # Take grid_tile_size into account
         step: int = GRID_TILE_SIZE // 2
