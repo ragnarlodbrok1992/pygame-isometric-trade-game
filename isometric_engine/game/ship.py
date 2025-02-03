@@ -45,7 +45,7 @@ class Ship:
             'ship16.png',
                 ]
         self.sprites: List[pygame.Surface] = []
-        self.position: Tuple[int, int] = (0, 0)  # In chunk grid positions
+        self.position = pygame.math.Vector2(0, 0)  # In chunk grid positions
         self.direction: int = 6
 
     def load_assets(self, assets_path: Path) -> None:
@@ -68,16 +68,15 @@ class Ship:
         sprite_height = self.sprites[self.direction].get_height()
         sprite_width_half = sprite_width // 2
         sprite_height_half = sprite_height // 2 + (GRID_TILE_SIZE // 4)  # Making it a little bit of center since the sprite is
+        sprite_offsetting = pygame.math.Vector2(sprite_width_half, sprite_height_half)
 
-        screen_position = (
-                (step) + (GRID_TILE_SIZE * self.position[0]),
-                (step) + (GRID_TILE_SIZE * self.position[1]),
-                )
+        screen_position = pygame.math.Vector2(((step) + (GRID_TILE_SIZE * self.position[0]), (step) + (GRID_TILE_SIZE * self.position[1])))
 
-        position_casted = cast_points_to_isometric([screen_position])
-        offset_points(position_casted, render_info)
-        position: Tuple[int, int] = position_casted[0]
-        position = (position[0] - sprite_width_half, position[1] - sprite_height_half)
+        position_casted = cast_points_to_isometric_v2([screen_position])
+        offset_points_v2(position_casted, render_info)
+        position = pygame.math.Vector2(position_casted[0])
+
+        position = position - sprite_offsetting
         
         screen.blit(self.sprites[self.direction], position)
 
@@ -86,10 +85,10 @@ class Ship:
             rect = pygame.Rect(position, (sprite_width, sprite_height))
             # Debug - bounding rect cross for the center of the sprite
             pygame.draw.rect(screen, (255, 255, 255), rect, width=1)
-            top_left = (position[0], position[1])
-            top_right = (position[0] + sprite_width, position[1])
-            bottom_left = (position[0], position[1] + sprite_height)
-            bottom_right = (position[0] + sprite_width, position[1] + sprite_height)
+            top_left = pygame.math.Vector2(position[0], position[1])
+            top_right = pygame.math.Vector2(position[0] + sprite_width, position[1])
+            bottom_left = pygame.math.Vector2(position[0], position[1] + sprite_height)
+            bottom_right = pygame.math.Vector2(position[0] + sprite_width, position[1] + sprite_height)
             pygame.draw.line(screen, (255, 0, 255), top_left, bottom_right)
             pygame.draw.line(screen, (255, 0, 255), top_right, bottom_left)
 

@@ -1,5 +1,7 @@
+import pygame
+
 from dataclasses import dataclass
-from typing import Tuple
+# from typing import Tuple
 
 # Clicked tiles
 # TODO: infinite chunks??? if so, there need to be another way to represent "nothing" in terms of selection
@@ -9,5 +11,5 @@ from typing import Tuple
 
 @dataclass
 class GameState:
-    clicked_tile: Tuple[int, int] = (-1, -1)
+    clicked_tile = pygame.math.Vector2(-1, -1)
 

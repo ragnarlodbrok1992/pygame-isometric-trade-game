@@ -1,4 +1,7 @@
+import pygame
+
 import numpy as np
+
 from typing import List, Tuple
 from numpy.typing import NDArray
 from .render_info import RenderInfo
@@ -15,25 +18,24 @@ REVERSE_PROJECTION_MATRIX = np.array(
          ( 1,  1)),
     dtype=np.float32)
 
-def cast_points_to_isometric(points: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+def cast_points_to_isometric_v2(points: List[pygame.math.Vector2]) -> List[pygame.math.Vector2]:
     temp_points = []
 
     for point in points:
-        point_array = np.array(point, dtype=np.float32)
-        iso_point = point_array @ PROJECTION_MATRIX  # numpy matrix multiplication
-        temp_points.append((int(iso_point[0]), int(iso_point[1])))
+        iso_point = np.array(point, dtype=np.float32) @ PROJECTION_MATRIX
+        temp_points.append(pygame.math.Vector2(tuple(iso_point)))
 
     return temp_points
 
-def offset_points(points: List[Tuple[int, int]], render_info: RenderInfo) -> None:
+def offset_points_v2(points: List[pygame.math.Vector2], render_info: RenderInfo) -> None:
     for x in range(len(points)):
-        points[x] = (points[x][0] + render_info.cam_offset_x, points[x][1] + render_info.cam_offset_y)
+        points[x] = points[x] + render_info.cam_offset
 
-def cast_points_to_normal(points: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+def cast_points_to_normal_v2(points: List[pygame.math.Vector2]) -> List[pygame.math.Vector2]:
     temp_points = []
     for point in points:
-        point_array = np.array(point, dtype=np.float32)
-        iso_point = point_array @ REVERSE_PROJECTION_MATRIX  # numpy matrix multiplication
-        temp_points.append((int(iso_point[0]), int(iso_point[1])))
+        normal_point = np.array(point, dtype=np.float32) @ REVERSE_PROJECTION_MATRIX
+        temp_points.append(pygame.math.Vector2(tuple(normal_point)))
 
     return temp_points
+

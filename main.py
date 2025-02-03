@@ -80,6 +80,7 @@ while CNTRL_ENGINE_RUNNING:
                     console.command = console.command[:-1]
                 elif event.unicode == '\r':
                     print("[CONSOLE] Pressed enter! Validate command")  # TODO: create validation logic for console input command
+                    console.command = ''
                 else:
                     console.command += event.unicode
 
@@ -101,11 +102,10 @@ while CNTRL_ENGINE_RUNNING:
                 # print("Clicking!")
                 # FIXME: This global state is still not working
                 if MOUSE_BUTTONS[0]:
-                    mouse_pos = pygame.mouse.get_pos()
+                    mouse_pos = pygame.math.Vector2(pygame.mouse.get_pos())
                     get_tile_from_grid(GRID_CHUNK, render_info, game_state, mouse_pos)
 
             MOUSE_BUTTONS = pygame.mouse.get_pressed()
-
             MOUSE_SELECTION_GAME_AREA = False
 
     # After events - still processing controls!
@@ -139,8 +139,8 @@ while CNTRL_ENGINE_RUNNING:
         MOUSE_DRAGGING_FRAME_DISTANCE = (
                 MOUSE_DRAGGING_HISTORY[(MOUSE_FRAME_SWITCH + 1) % 2][0] - MOUSE_DRAGGING_HISTORY[MOUSE_FRAME_SWITCH][0],
                 MOUSE_DRAGGING_HISTORY[(MOUSE_FRAME_SWITCH + 1) % 2][1] - MOUSE_DRAGGING_HISTORY[MOUSE_FRAME_SWITCH][1])
-        render_info.cam_offset_x += MOUSE_DRAGGING_FRAME_DISTANCE[0]
-        render_info.cam_offset_y += MOUSE_DRAGGING_FRAME_DISTANCE[1]
+
+        render_info.cam_offset += pygame.math.Vector2(MOUSE_DRAGGING_FRAME_DISTANCE[0], MOUSE_DRAGGING_FRAME_DISTANCE[1])
 
     # ================== FINISHING EVENT PROCESSING ===================
 
@@ -166,7 +166,7 @@ while CNTRL_ENGINE_RUNNING:
     # TODO: Move this functions to debug_text.py
     if ui_state.debug_text_out:
         debug_text.draw_debug_text(screen, f"Delta Time: {dt: .4f} sec")
-        debug_text.draw_debug_text(screen, f"Camera offset --> x: {render_info.cam_offset_x}, y: {render_info.cam_offset_y}")
+        debug_text.draw_debug_text(screen, f"Camera offset --> {render_info.cam_offset}")
         debug_text.draw_debug_text(screen, f"Pressed mouse buttons: {MOUSE_BUTTONS}")
         debug_text.draw_debug_text(screen, f"Current mouse position: {pygame.mouse.get_pos()}")
         if MOUSE_DRAGGING:
