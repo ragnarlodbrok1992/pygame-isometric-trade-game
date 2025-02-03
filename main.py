@@ -112,15 +112,13 @@ while CNTRL_ENGINE_RUNNING:
     # Dragging check start
     # TODO: Move mousing to it's own class
     if MOUSE_BUTTONS[0]:  # Left mouse button
-        mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
-        # Populate mouse dragging history properly
-        MOUSE_DRAGGING_HISTORY[MOUSE_FRAME_SWITCH][0] = mouse_pos_x
-        MOUSE_DRAGGING_HISTORY[MOUSE_FRAME_SWITCH][1] = mouse_pos_y
+        MOUSE_DRAGGING_HISTORY[MOUSE_FRAME_SWITCH] = pygame.math.Vector2(pygame.mouse.get_pos())
 
         # Switch frame for mouse
         MOUSE_FRAME_SWITCH += 1
         MOUSE_FRAME_SWITCH = MOUSE_FRAME_SWITCH % 2
 
+        # FIXME We can optimze that I think
         if not MOUSE_DRAGGING and MOUSE_DRAGGING_HISTORY[0][0] != -1 and MOUSE_DRAGGING_HISTORY[1][0] != -1:
             rel_drag_x, rel_drag_y = (
                     MOUSE_DRAGGING_HISTORY[(MOUSE_FRAME_SWITCH + 1) % 2][0] - MOUSE_DRAGGING_HISTORY[MOUSE_FRAME_SWITCH][0],
@@ -130,17 +128,17 @@ while CNTRL_ENGINE_RUNNING:
 
     else:
         MOUSE_DRAGGING = False
-        MOUSE_DRAGGING_HISTORY = [[-1, -1], [-1, -1]]
+        MOUSE_DRAGGING_HISTORY = [pygame.math.Vector2(-1, -1), pygame.math.Vector2(-1, -1)]
         MOUSE_FRAME_SWITCH = 0
 
     # If here we have mouse_frame_switch set that means we have at least two values in dragging history
     # Check for the differece
     if MOUSE_DRAGGING:
-        MOUSE_DRAGGING_FRAME_DISTANCE = (
+        MOUSE_DRAGGING_FRAME_DISTANCE = pygame.math.Vector2(
                 MOUSE_DRAGGING_HISTORY[(MOUSE_FRAME_SWITCH + 1) % 2][0] - MOUSE_DRAGGING_HISTORY[MOUSE_FRAME_SWITCH][0],
                 MOUSE_DRAGGING_HISTORY[(MOUSE_FRAME_SWITCH + 1) % 2][1] - MOUSE_DRAGGING_HISTORY[MOUSE_FRAME_SWITCH][1])
 
-        render_info.cam_offset += pygame.math.Vector2(MOUSE_DRAGGING_FRAME_DISTANCE[0], MOUSE_DRAGGING_FRAME_DISTANCE[1])
+        render_info.cam_offset += MOUSE_DRAGGING_FRAME_DISTANCE
 
     # ================== FINISHING EVENT PROCESSING ===================
 
