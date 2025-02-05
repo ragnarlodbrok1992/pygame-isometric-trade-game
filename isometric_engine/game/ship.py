@@ -3,7 +3,7 @@ from __future__ import annotations
 import pygame
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from enum import IntEnum
 
 from ..render_info import *
@@ -11,6 +11,7 @@ from ..isometric_perspective import *
 from ..grid_config import *
 from ..grid import *
 from ..iso_math import *
+from ..world_manager import *
 
 # Directions - this somehow should make sens, I don't know how to give directions with three pieces
 # 0  - ship1  - NW
@@ -55,7 +56,12 @@ class Direction(IntEnum):
         return Direction((self.value - other) % 16)
 
 class Ship:
-    def __init__(self) -> None:
+    world_manager: Optional[WorldManager] = None
+
+    def __init__(self, world_manager: WorldManager) -> None:
+        if not self.__class__.world_manager:
+            self.__class__.world_manager = world_manager
+
         self.assets_names_list = [
             'ship1.png',
             'ship2.png',
@@ -145,10 +151,11 @@ class Ship:
                 pass
 
         if possible_position != pygame.math.Vector2(0, 0):
-            x_ind, y_ind = GRID_CHUNK.shape
-            if 0 <= possible_position.x < x_ind and 0 <= possible_position.y < y_ind:
-                self.is_sailing = True
-                self.position_to_go = possible_position
+            if self.world_manager is not None:
+                x_ind, y_ind = self.world_manager.grid_chunk.shape
+                if 0 <= possible_position.x < x_ind and 0 <= possible_position.y < y_ind:
+                    self.is_sailing = True
+                    self.position_to_go = possible_position
 
     def _sail(self, old_position: pygame.math.Vector2, new_position: pygame.math.Vector2, dt: float) -> None:
         self.save_start_position = False

@@ -14,6 +14,7 @@ from isometric_engine.isometric_perspective import *
 from isometric_engine.game_state import *
 from isometric_engine.ui_state import *
 from isometric_engine.console import *
+from isometric_engine.world_manager import *
 
 # Game stuff
 from isometric_engine.game.ship import *
@@ -27,17 +28,24 @@ clock = pygame.time.Clock()
 screen: pygame.Surface = pygame.display.set_mode((CONF_WINDOW_WIDTH, CONF_WINDOW_HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
 pygame.display.set_caption(CONF_WINDOW_TITLE)
 
+# Tweaks of library
 pygame.key.set_repeat(500, 30)
+
+# Control variables for fine-tuning how input behaves
+up_arrow_pressed = False 
 
 # Main engine local stuff
 debug_text = DebugText()
 render_info = RenderInfo()
-game_state = GameState()
 ui_state = UIState()
 console = Console()
 
+# Game simulation stuff
+game_state = GameState()
+world_manager = WorldManager()
+
 # Inner game entities
-ship = Ship()
+ship = Ship(world_manager)
 
 # Assets loading - we try to do that from here
 ship_assets = Path('assets/ship')
@@ -58,8 +66,10 @@ while CNTRL_ENGINE_RUNNING:
         if event.type == pygame.QUIT:
             CNTRL_ENGINE_RUNNING = False
 
-        # Check for keyboard input
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                up_arrow_pressed = True
+
             # TODO: add switch for keyboard input for console on/off
             # TODO: design console input system - we need to populate Console.command variable and process it
             # after pushing ENTER key
@@ -76,10 +86,7 @@ while CNTRL_ENGINE_RUNNING:
 
                 # DEBUG - pygame.K_w is here to resize chunk
                 if event.key == pygame.K_w:
-                    GRID_CHUNK = resize_grid_chunk(GRID_CHUNK, 20, 20)
-                    # TODO: resizing this grid chunk creates a new one, that is not one used in ship navigation
-                    # TODO: create manager class that will be passed around and have chunks inside it (world manager)
-                    print(f"Resizing grid_chunk -> {hex(id(GRID_CHUNK))}")
+                    world_manager.resize_grid_chunk(20, 20)
 
                 # Check arrow keys
                 if event.key == pygame.K_LEFT:
@@ -87,9 +94,6 @@ while CNTRL_ENGINE_RUNNING:
 
                 if event.key == pygame.K_RIGHT:
                     ship.rotate_clockwise()
-
-                if event.key == pygame.K_UP:
-                    ship.try_to_go_forward()
 
             else:
                 # FIXME I think we do think badly here about appending characters to string - but fuck that for now
@@ -106,6 +110,11 @@ while CNTRL_ENGINE_RUNNING:
                 console.ready = not console.ready  # TODO console will be ready after animation - right now we are ready immediately
                 console.command = ''
 
+        # Checking for key up - some special cases
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP:
+                up_arrow_pressed = False
+
         # Checking for mouse events
         if event.type == pygame.MOUSEBUTTONDOWN:
             MOUSE_BUTTONS = pygame.mouse.get_pressed()
@@ -120,12 +129,16 @@ while CNTRL_ENGINE_RUNNING:
                 # FIXME: This global state is still not working
                 if MOUSE_BUTTONS[0]:
                     mouse_pos = pygame.math.Vector2(pygame.mouse.get_pos())
-                    get_tile_from_grid(GRID_CHUNK, render_info, game_state, mouse_pos)
+                    world_manager.get_tile_from_grid(render_info, game_state, mouse_pos)
 
             MOUSE_BUTTONS = pygame.mouse.get_pressed()
             MOUSE_SELECTION_GAME_AREA = False
 
     # After events - still processing controls!
+    # Handle cases of controls for keyboard
+    if up_arrow_pressed:
+        ship.try_to_go_forward()
+
     # Dragging check start
     # TODO: Move mousing to it's own class
     if MOUSE_BUTTONS[0]:  # Left mouse button
@@ -164,7 +177,7 @@ while CNTRL_ENGINE_RUNNING:
 
     # Render stuff
     # Render isometric grid of water
-    draw_grid_chunk(screen, render_info, game_state, GRID_CHUNK)
+    draw_grid_chunk(world_manager, screen, render_info, game_state)
 
     # Render objects
     ship.render_ship(screen, render_info, dt)
