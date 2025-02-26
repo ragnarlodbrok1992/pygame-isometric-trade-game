@@ -4,3 +4,6 @@
 [submodule "pygame-ce"]
 	path = pygame-ce
 	url = https://github.com/pygame-community/pygame-ce.git
+[submodule "c_isometric_engine/ext/sdl"]
+	path = c_isometric_engine/ext/sdl
+	url = https://github.com/libsdl-org/SDL
