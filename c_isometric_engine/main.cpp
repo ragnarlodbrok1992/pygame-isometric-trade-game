@@ -30,8 +30,15 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
 
   // Exit on Q
   if (event->type == SDL_EVENT_KEY_DOWN) {
-    // Something something printf
-    printf("Pressing buttons!\n");
+    // Switch on key types
+    switch (event->key.key) {
+      case SDLK_Q: // Exit on Q
+        return SDL_APP_SUCCESS;
+        break;
+
+      default:
+        break;
+    }
   }
 
   // If everythingi is allright - proceed
