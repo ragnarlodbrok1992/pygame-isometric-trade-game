@@ -25,7 +25,8 @@ echo Compiling...
   /Fe:"isometric_trade_game"^
   ../c_isometric_engine/main.cpp^
   -I%sdl_dir%%sdl_include%^
-  /link /LIBPATH:%sdl_build% %sdl_lib%
+  /link /LIBPATH:%sdl_build% %sdl_lib%^
+  /SUBSYSTEM:CONSOLE
 
 popd
 
