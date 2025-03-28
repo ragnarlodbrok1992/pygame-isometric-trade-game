@@ -7,3 +7,6 @@
 [submodule "c_isometric_engine/ext/sdl"]
 	path = c_isometric_engine/ext/sdl
 	url = https://github.com/libsdl-org/SDL
+[submodule "external/DirectX-Headers"]
+	path = external/DirectX-Headers
+	url = https://github.com/microsoft/DirectX-Headers.git

@@ -8,6 +8,8 @@ SET sdl_include=include
 SET sdl_dll=SDL3.dll
 SET sdl_lib=SDL3.lib
 
+set DIRECTX_HEADERS_INCLUDE_DIR="..\external\DirectX-Headers\include"
+
 IF NOT EXIST build mkdir build
 
 pushd build
@@ -25,8 +27,10 @@ echo Compiling...
   /Fe:"isometric_trade_game"^
   ../c_isometric_engine/main.cpp^
   -I%sdl_dir%%sdl_include%^
+  /I%DIRECTX_HEADERS_INCLUDE_DIR%^
+  user32.lib gdi32.lib d3d12.lib dxgi.lib d3dcompiler.lib^
   /link /LIBPATH:%sdl_build% %sdl_lib%^
-  /SUBSYSTEM:CONSOLE
+  /SUBSYSTEM:CONSOLE /out:IsometricTradeGame.exe
 
 popd
 
