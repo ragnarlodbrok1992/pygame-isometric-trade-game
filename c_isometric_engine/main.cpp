@@ -170,11 +170,31 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
   SDL_Log("swapChainDesc  -> 0x%x", swapChainDesc);
   SDL_Log("&swapChainDesc -> 0x%x", &swapChainDesc);
 
-  Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
+  Microsoft::WRL::ComPtr<IDXGISwapChain>* swapChain;
   // FIXME: There is a bug here somewhere
   // BUG is here... is DirectX3D interferring with SDL3?
   // maybe SDL3 has internal swapchain or something like that for directx3d
-  try {
+
+  // swapChain = SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER;
+  SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
+  SDL_PropertyType property_type = SDL_GetPropertyType(props, SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER);
+  // Error in SDL_FindInHashTable for props???
+
+  SDL_Log("Props -> 0x%x", props);
+  SDL_Log("Property_type -> 0x%x", property_type);
+
+  if (property_type == SDL_PROPERTY_TYPE_INVALID) {
+    SDL_Log("Property type invalid!");
+  } else {
+    void* swapchainPointer = SDL_GetPointerProperty(props, SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, NULL);
+    if (swapchainPointer) {
+      SDL_Log("swapchainPointer is 0x%p", swapchainPointer);
+    } else {
+      SDL_Log("Cannot find swapchainPointer!");
+    }
+  }
+  
+  /* try {
     ThrowIfFailed(factory->CreateSwapChain(
           m_commandQueue.Get(),
           &swapChainDesc,
@@ -184,7 +204,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     SDL_Log("Catched exception!");
     // SDL might have it's own swapchain...
     // Time to dig in!
-  }
+  } */
+
+  // Trying to maybe associate our swapChain to hwnd got from SDL?
+  // HRESULT result;
+  // result = IDXGIFactory2_CreateSwapChainForHwnd();
+
+
 
   // SDL_Log("m_swapChain -> %x", m_swapChain);
 

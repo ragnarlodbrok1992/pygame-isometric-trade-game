@@ -5,4 +5,5 @@ tags.temp
 **/__pycache__
 .mypy_cache/
 build/
+*.rdbg
 
