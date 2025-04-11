@@ -61,6 +61,35 @@ HANDLE m_fenceEvent;
 Microsoft::WRL::ComPtr<ID3D12Fence> m_fence;
 UINT64 m_fenceValue;
 
+// Helper function to enumerate properties in SDL
+static void enumerate_properties(void* userdata, SDL_PropertiesID props, const char* name) {
+  SDL_PropertyType prop_type = SDL_GetPropertyType(props, name);
+
+  switch (prop_type) {
+    case SDL_PROPERTY_TYPE_POINTER:
+      SDL_Log("%s is a pointer poperty", name);
+      break;
+    case SDL_PROPERTY_TYPE_STRING:
+      SDL_Log(
+        "%s is a string property with value %s", name, SDL_GetStringProperty(props, name, ""));
+      break;
+    case SDL_PROPERTY_TYPE_NUMBER:
+      SDL_Log("%s is a number property with value %" SDL_PRIs64, name, SDL_GetNumberProperty(props, name, 0));
+      break;
+    case SDL_PROPERTY_TYPE_FLOAT:
+      SDL_Log("%s is a float property with value %f", name, SDL_GetFloatProperty(props, name, 0.0f));
+      break;
+    case SDL_PROPERTY_TYPE_BOOLEAN:
+      SDL_Log(
+        "%s is a boolean property with value %d", name, SDL_GetBooleanProperty(props, name, false));
+      break;
+    case SDL_PROPERTY_TYPE_INVALID:
+    default:
+      SDL_Log("%s is an invalid property", name);
+      break;
+  }
+}
+
 // Helper functions for C-->C++ interoperability by Microsoft
 inline void ThrowIfFailed(HRESULT hr) {
   if (FAILED(hr)) {
@@ -176,23 +205,44 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
   // maybe SDL3 has internal swapchain or something like that for directx3d
 
   // swapChain = SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER;
-  SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
-  SDL_PropertyType property_type = SDL_GetPropertyType(props, SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER);
-  // Error in SDL_FindInHashTable for props???
+  SDL_PropertiesID renderer_properties_id = SDL_GetRendererProperties(renderer);
 
-  SDL_Log("Props -> 0x%x", props);
-  SDL_Log("Property_type -> 0x%x", property_type);
+  int num_displays;
+  SDL_DisplayID* displays = SDL_GetDisplays(&num_displays);
+  SDL_Log("Found %d displays.", num_displays);
 
-  if (property_type == SDL_PROPERTY_TYPE_INVALID) {
-    SDL_Log("Property type invalid!");
-  } else {
-    void* swapchainPointer = SDL_GetPointerProperty(props, SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, NULL);
-    if (swapchainPointer) {
-      SDL_Log("swapchainPointer is 0x%p", swapchainPointer);
-    } else {
-      SDL_Log("Cannot find swapchainPointer!");
+  for (int i = 0; i < num_displays; i++) {
+    SDL_PropertiesID prop_id = SDL_GetDisplayProperties(displays[i]);
+    SDL_Log("Display %d has properties ID %d", i, prop_id);
+
+    if (!SDL_EnumerateProperties(prop_id, enumerate_properties, NULL)) {
+      SDL_Log("Error enumerating display properties: %s.", SDL_GetError());
     }
   }
+
+  if (!SDL_EnumerateProperties(renderer_properties_id, enumerate_properties, NULL)) {
+    SDL_Log("Error enumerating renderer properties: %s.", SDL_GetError());
+  }
+  
+  // SDL_PropertyType property_type = SDL_GetPropertyType(properties_id, SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER);
+  // Error in SDL_FindInHashTable for props???
+
+  // FIXME: checking properties of SDL_Renderer
+
+
+  // SDL_Log("PropertiesID -> 0x%x", properties_id);
+  // SDL_Log("PropertyType -> 0x%x", property_type);
+
+  // if (property_type == SDL_PROPERTY_TYPE_INVALID) {
+  //   SDL_Log("Property type invalid!");
+  // } else {
+  //   void* swapchainPointer = SDL_GetPointerProperty(properties_id, SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, NULL);
+  //   if (swapchainPointer) {
+  //     SDL_Log("swapchainPointer is 0x%p", swapchainPointer);
+  //   } else {
+  //     SDL_Log("Cannot find swapchainPointer!");
+  //   }
+  // }
   
   /* try {
     ThrowIfFailed(factory->CreateSwapChain(
