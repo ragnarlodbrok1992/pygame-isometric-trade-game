@@ -1,0 +1,182 @@
+Give me code examples for all those steps.
+
+Sure, here are code examples for each step to use the DirectX 12 renderer with SDL3:
+
+### 1. Set Up SDL3
+Ensure you have SDL3 installed and included in your project.
+
+### 2. Create a GPU Device
+```c
+SDL_GPUDevice* gpuDevice = SDL_CreateGPUDevice(SDL_GPUDriver_D3D12);
+if (!gpuDevice) {
+    SDL_Log("Failed to create GPU device: %s", SDL_GetError());
+    return -1;
+}
+```
+
+### 3. Assign the GPU Device to a Window
+```c
+SDL_Window* window = SDL_CreateWindow("SDL3 DirectX 12 Example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+if (!window) {
+    SDL_Log("Failed to create window: %s", SDL_GetError());
+    SDL_DestroyGPUDevice(gpuDevice);
+    return -1;
+}
+
+if (SDL_ClaimWindowForGPUDevice(gpuDevice, window) != 0) {
+    SDL_Log("Failed to claim window for GPU device: %s", SDL_GetError());
+    SDL_DestroyWindow(window);
+    SDL_DestroyGPUDevice(gpuDevice);
+    return -1;
+}
+```
+
+### 4. Prepare Rendering Data
+#### Create Shaders
+```c
+SDL_GPUShader* vertexShader = SDL_CreateGPUShader(gpuDevice, SDL_GPUShaderStage_Vertex, "vertex_shader.dxil", NULL);
+SDL_GPUShader* fragmentShader = SDL_CreateGPUShader(gpuDevice, SDL_GPUShaderStage_Fragment, "fragment_shader.dxil", NULL);
+if (!vertexShader || !fragmentShader) {
+    SDL_Log("Failed to create shaders: %s", SDL_GetError());
+    SDL_DestroyGPUDevice(gpuDevice);
+    SDL_DestroyWindow(window);
+    return -1;
+}
+```
+
+#### Create Vertex Buffer
+```c
+float vertices[] = {
+    // Positions        // Colors
+    0.5f,  0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // Top Right
+    0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // Bottom Right
+    -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f, // Bottom Left
+    -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f  // Top Left
+};
+
+SDL_GPUBuffer* vertexBuffer = SDL_CreateGPUBuffer(gpuDevice, sizeof(vertices), SDL_GPUBufferUsageFlag_Vertex, NULL);
+SDL_UploadToGPUBuffer(vertexBuffer, vertices, sizeof(vertices));
+```
+
+#### Create Texture
+```c
+SDL_GPUTexture* texture = SDL_CreateGPUTexture(gpuDevice, SDL_GPUTextureFormat_RGBA8, 800, 600, SDL_GPUTextureUsageFlag_RenderTarget, NULL);
+if (!texture) {
+    SDL_Log("Failed to create texture: %s", SDL_GetError());
+    SDL_DestroyGPUDevice(gpuDevice);
+    SDL_DestroyWindow(window);
+    return -1;
+}
+```
+
+#### Create Sampler
+```c
+SDL_GPUSampler* sampler = SDL_CreateGPUSampler(gpuDevice, NULL);
+if (!sampler) {
+    SDL_Log("Failed to create sampler: %s", SDL_GetError());
+    SDL_DestroyGPUDevice(gpuDevice);
+    SDL_DestroyWindow(window);
+    return -1;
+}
+```
+
+### 5. Create Command Buffers
+```c
+SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(gpuDevice);
+if (!commandBuffer) {
+    SDL_Log("Failed to acquire command buffer: %s", SDL_GetError());
+    SDL_DestroyGPUDevice(gpuDevice);
+    SDL_DestroyWindow(window);
+    return -1;
+}
+```
+
+### 6. Render Passes
+```c
+SDL_BeginGPURenderPass(commandBuffer, texture, NULL, NULL, NULL);
+```
+
+### 7. Draw Commands
+```c
+SDL_BindGPUGraphicsPipeline(commandBuffer, pipeline);
+SDL_SetGPUViewport(commandBuffer, NULL);
+SDL_BindGPUVertexBuffers(commandBuffer, 1, &vertexBuffer, NULL);
+SDL_BindGPUVertexSamplers(commandBuffer, 1, &sampler);
+
+SDL_DrawGPUPrimitives(commandBuffer, 0, 6, NULL);
+```
+
+### 8. End Render Pass
+```c
+SDL_EndGPURenderPass(commandBuffer);
+```
+
+### 9. Submit Command Buffer
+```c
+SDL_SubmitGPUCommandBuffer(commandBuffer);
+```
+
+### 10. Read Back Data (if necessary)
+```c
+SDL_DownloadFromGPUTexture(texture, NULL);
+```
+
+### 11. Handle Shaders
+Ensure your shaders are compiled to the correct format for DirectX 12 (e.g., DXIL).
+
+### 12. Performance Optimization
+Follow the performance tips mentioned in the SDL3 documentation to optimize your rendering performance.
+
+### Cleanup
+```c
+SDL_DestroyGPUShader(vertexShader);
+SDL_DestroyGPUShader(fragmentShader);
+SDL_DestroyGPUBuffer(vertexBuffer);
+SDL_DestroyGPUTexture(texture);
+SDL_DestroyGPUSampler(sampler);
+SDL_DestroyGPUDevice(gpuDevice);
+SDL_DestroyWindow(window);
+SDL_Quit();
+```
+
+These code snippets provide a basic framework for using the DirectX 12 renderer with SDL3. You can expand on these examples to fit your specific use case. For more detailed information, refer to the SDL3 documentation and the SDL Wiki.
+
+Shaders:
+
+
+// vertex_shader.hlsl
+
+struct VS_INPUT
+{
+    float4 Pos : POSITION;
+    float4 Color : COLOR;
+};
+
+struct VS_OUTPUT
+{
+    float4 Pos : SV_POSITION;
+    float4 Color : COLOR;
+};
+
+VS_OUTPUT main(VS_INPUT input)
+{
+    VS_OUTPUT output;
+    output.Pos = input.Pos;
+    output.Color = input.Color;
+    return output;
+}
+
+
+// fragment_shader.hlsl
+
+struct PS_INPUT
+{
+    float4 Pos : SV_POSITION;
+    float4 Color : COLOR;
+};
+
+float4 main(PS_INPUT input) : SV_Target
+{
+    return input.Color;
+}
+
