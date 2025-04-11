@@ -26,17 +26,18 @@ static SDL_Renderer* renderer = nullptr;
 // Engine variables
 static UINT m_width = 1280;
 static UINT m_height = 720;
-static float m_aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
+// static float m_aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
 static std::wstring title = L"SDL Isometric Trade Game";
 static std::wstring version = L"alpha";
 static std::wstring identifier = L"ragnar.engine.ISOMETRIC";
 static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 
+/*
 // DirectX3D variables
 #define FRAME_COUNT 2
 #define _DEBUG
 static bool m_useWarpDevice = false; // WARP stands for Windows Advanced Rasterization Platform - software renderer, basically
-                                     //
+
 // Pipeline objects
 D3D12_VIEWPORT m_viewport;
 D3D12_RECT     m_scissorRect;
@@ -60,6 +61,7 @@ UINT m_frameIndex;
 HANDLE m_fenceEvent;
 Microsoft::WRL::ComPtr<ID3D12Fence> m_fence;
 UINT64 m_fenceValue;
+*/
 
 // Helper function to enumerate properties in SDL
 static void enumerate_properties(void* userdata, SDL_PropertiesID props, const char* name) {
@@ -132,6 +134,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     return SDL_APP_FAILURE;
   }
 
+  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d12");
   if (!SDL_CreateWindowAndRenderer("SDL Isometric Trade Game",
         m_width, m_height,
         0, &window, &renderer)) {
@@ -140,6 +143,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
   }
 
   // Creating a handle to DirectX3D12
+  /*
 
   HWND hwnd = (HWND) SDL_GetPointerProperty(SDL_GetWindowProperties(window),
       SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
@@ -199,12 +203,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
   SDL_Log("swapChainDesc  -> 0x%x", swapChainDesc);
   SDL_Log("&swapChainDesc -> 0x%x", &swapChainDesc);
 
-  Microsoft::WRL::ComPtr<IDXGISwapChain>* swapChain;
   // FIXME: There is a bug here somewhere
   // BUG is here... is DirectX3D interferring with SDL3?
   // maybe SDL3 has internal swapchain or something like that for directx3d
 
   // swapChain = SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER;
+  */
   SDL_PropertiesID renderer_properties_id = SDL_GetRendererProperties(renderer);
 
   int num_displays;
@@ -244,17 +248,20 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
   //   }
   // }
   
-  /* try {
+  /*
+  Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
+  try {
     ThrowIfFailed(factory->CreateSwapChain(
           m_commandQueue.Get(),
           &swapChainDesc,
           &swapChain
       ));
   } catch (const std::runtime_error err) {
-    SDL_Log("Catched exception!");
+    SDL_Log("Catched exception! %s", err.what());
     // SDL might have it's own swapchain...
     // Time to dig in!
-  } */
+  }
+  */
 
   // Trying to maybe associate our swapChain to hwnd got from SDL?
   // HRESULT result;
@@ -328,6 +335,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     UINT compileFlags = 0;
 #endif
     */
+
+  // Let's try to use directx3d12 devices/command_queue/swap_chain provided to us by SDL3...
 
   return SDL_APP_CONTINUE; // This is crucial...
 }
